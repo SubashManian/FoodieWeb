@@ -4,7 +4,7 @@ import HotelList from './HotelList';
 
 function App() {
   return (
-    <div className="App">
+    <div className="">
       <HotelList />
     </div>
   );

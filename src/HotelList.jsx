@@ -1,4 +1,3 @@
-// src/HotelList.js
 import React, { useState, useEffect } from 'react';
 import './HotelList.css'; // Import the CSS file for styling
 import HotelDetailsModal from './HotelDetailsModal';
@@ -18,91 +17,92 @@ const HotelList = () => {
   const [filteredHotels, setFilteredHotels] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
+  const [editingHotelId, setEditingHotelId] = useState(null); // Track which hotel is being edited
+  const [editedHotel, setEditedHotel] = useState(null); // Track the edited hotel data
 
   // Fetch hotels data from the API
-    const fetchHotels = async () => {
-        try {
-            setLoading(true); // Start loading
-            const response = await fetch(`${baseUrl}/gethotels`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setHotels(data);
-            setFilteredHotels(data); // Set filtered hotels initially to all hotels
-            setError(null); // Clear any previous errors
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false); // Stop loading
-        }
-    };
+  const fetchHotels = async () => {
+    try {
+      setLoading(true); // Start loading
+      const response = await fetch(`${baseUrl}/gethotels`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setHotels(data);
+      setFilteredHotels(data); // Set filtered hotels initially to all hotels
+      setError(null); // Clear any previous errors
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
 
   // Fetch count data from the API
-    const fetchCount = async (userMobileNumber) => {
-        try {
-            setLoading(true); // Start loading
-            let url = userMobileNumber === '' ? `${baseUrl}/count` : `${baseUrl}/count/${userMobileNumber}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setCountDetails(data);
-            setError(null); // Clear any previous errors
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false); // Stop loading
-        }
-    };
+  const fetchCount = async (userMobileNumber) => {
+    try {
+      setLoading(true); // Start loading
+      let url = userMobileNumber === '' ? `${baseUrl}/count` : `${baseUrl}/count/${userMobileNumber}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setCountDetails(data);
+      setError(null); // Clear any previous errors
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
 
-    useEffect(() => {
-        fetchCount('');
-        fetchHotels();
-    }, []);
+  useEffect(() => {
+    fetchCount('');
+    fetchHotels();
+  }, []);
 
-    // Handle search input change
-    // Handle search input change
-    const handleSearchChange = (event) => {
-        const searchValue = event.target.value;
-        setSearchTerm(searchValue);
+  // Handle search input change
+  const handleSearchChange = (event) => {
+    const searchValue = event.target.value;
+    setSearchTerm(searchValue);
 
-        if (searchValue.trim() === '') {
-            // If search term is cleared, fetch hotels from API
-            fetchCount('');
-            fetchHotels();
-        } else {
-            if (searchValue?.trim()?.length === 10) {
-                fetchCount(searchValue?.trim());
-            }
-            // Filter hotels based on the search term and selected date
-            filterHotels(searchValue, selectedDate);
-        }
-    };
+    if (searchValue.trim() === '') {
+      // If search term is cleared, fetch hotels from API
+      fetchCount('');
+      fetchHotels();
+    } else {
+      if (searchValue?.trim()?.length === 10) {
+        fetchCount(searchValue?.trim());
+      }
+      // Filter hotels based on the search term and selected date
+      filterHotels(searchValue, selectedDate);
+    }
+  };
 
-    // Handle date change
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
-        if (date === null) {
-            fetchHotels();
-        } else {
-            // Filter hotels based on the search term and selected date
-            filterHotels(searchTerm, date);
-        }
-    };
+  // Handle date change
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    if (date === null) {
+      fetchHotels();
+    } else {
+      // Filter hotels based on the search term and selected date
+      filterHotels(searchTerm, date);
+    }
+  };
 
-    // Function to filter hotels by userMobileNumber and vlogPostDate
-    const filterHotels = (searchValue, date) => {
-        const filtered = hotels.filter((hotel) => {
-            const matchesSearch = hotel.userMobileNumber.includes(searchValue);
-            const matchesDate = date ? new Date(hotel.createdDate).toDateString() === date.toDateString() : true;
-            
-            return matchesSearch && matchesDate;
-        });
+  // Function to filter hotels by userMobileNumber and vlogPostDate
+  const filterHotels = (searchValue, date) => {
+    const filtered = hotels.filter((hotel) => {
+      const matchesSearch = hotel.userMobileNumber.includes(searchValue);
+      const matchesDate = date ? new Date(hotel.createdDate).toDateString() === date.toDateString() : true;
 
-        setHotels(filtered);
-    };
+      return matchesSearch && matchesDate;
+    });
+
+    setHotels(filtered);
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -111,6 +111,8 @@ const HotelList = () => {
 
   const handleHotelSelect = (hotel) => {
     // Mock fetching details for selected hotel
+    console.log("Entered Modal");
+    
     setSelectedHotel(hotel);
     setShowModal(true);
   };
@@ -122,9 +124,34 @@ const HotelList = () => {
   };
 
   const handleReject = (hotelId) => {
-    // Approve logic can go here
-    console.log(`Hotel with ID ${hotelId} approved.`);
-    alert(`Hotel with ID ${hotelId} approved.`);
+    // Reject logic can go here
+    console.log(`Hotel with ID ${hotelId} rejected.`);
+    alert(`Hotel with ID ${hotelId} rejected.`);
+  };
+
+  const handleEditClick = (hotel) => {
+    setEditingHotelId(hotel.hotelId);
+    setEditedHotel({ ...hotel }); // Copy the hotel data to be edited
+  };
+
+  const handleSaveClick = () => {
+    // Update the hotel with editedHotel data
+    const updatedHotels = hotels.map((hotel) =>
+      hotel.hotelId === editingHotelId ? editedHotel : hotel
+    );
+    setHotels(updatedHotels);
+    setEditingHotelId(null);
+    setEditedHotel(null);
+  };
+
+  const handleCancelClick = () => {
+    setEditingHotelId(null);
+    setEditedHotel(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedHotel((prev) => ({ ...prev, [name]: value }));
   };
 
   // Display loading indicator if data is being fetched
@@ -139,22 +166,22 @@ const HotelList = () => {
 
   const isURL = (str) => {
     const pattern = new RegExp(
-        "^(https?:\\/\\/)?" + // protocol (optional)
-        "((([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}|" + // domain name
-        "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR IP (v4) address
-        "(\\:\\d+)?(\\/[-a-zA-Z\\d%_.~+]*)*" + // port and path (optional)
-        "(\\?[;&a-zA-Z\\d%_.~+=-]*)?" + // query string (optional)
-        "(\\#[-a-zA-Z\\d_]*)?$", // fragment locator (optional)
-        "i"
-      );
-    
+      "^(https?:\\/\\/)?" + // protocol (optional)
+      "((([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}|" + // domain name
+      "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR IP (v4) address
+      "(\\:\\d+)?(\\/[-a-zA-Z\\d%_.~+]*)*" + // port and path (optional)
+      "(\\?[;&a-zA-Z\\d%_.~+=-]*)?" + // query string (optional)
+      "(\\#[-a-zA-Z\\d_]*)?$", // fragment locator (optional)
+      "i"
+    );
+
     return !!pattern.test(str);
-}
+  };
 
   // Compute counts
   const totalData = hotels.length;
-  const verifiedData = hotels.filter(hotel => hotel.verified).length;
-  const validData = hotels.filter(hotel => hotel.valid).length;
+  const verifiedData = hotels.filter((hotel) => hotel.verified).length;
+  const validData = hotels.filter((hotel) => hotel.valid).length;
 
   return (
     <div className="hotel-list-container">
@@ -176,62 +203,215 @@ const HotelList = () => {
           isClearable
           placeholderText="Filter by Date"
           className="date-picker"
-          
         />
         <div className="stats">
-            <span>Total Data: {totalData}</span>
-            <span className='approved-count'>Verified Data: {verifiedData}</span>
-            <span className='approved-count'>Valid Data: {validData}</span>
+          <span>Total Data: {totalData}</span>
+          <span className="approved-count">Verified Data: {verifiedData}</span>
+          <span className="approved-count">Valid Data: {validData}</span>
         </div>
       </div>
 
-      <table className="hotel-table">
-        <thead>
-          <tr>
-            <th>DataEntry Number</th>
-            <th>Name</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>Rating</th>
-            <th>Phone</th>
-            <th>Map Location</th>
-            <th>Vlog Video</th>
-            <th>View Count</th>
-            <th>Post Date</th>
-            <th>Approve</th>
-            <th>Reject</th>
-          </tr>
-        </thead>
-        <tbody>
-          {hotels.map((hotel) => (
-            <tr key={hotel.hotelId}>
-                <td>{hotel.userMobileNumber}</td>
-              <td onClick={() => {handleHotelSelect(hotel)}}>{hotel.hotelName}</td>
-              <td>{hotel.hotelAddress}</td>
-              <td>{hotel.hotelCity}</td>
-              <td>{hotel.hotelRating}</td>
-              <td>{hotel.hotelPhone}</td>
-              <td>
-                {isURL(hotel.hotelMapLocationLink?.trim()) 
-                    ? <a href={hotel.hotelMapLocationLink} target="_blank" rel="noopener noreferrer">View on Map</a>
-                    : hotel.hotelMapLocationLink
-                }
-              </td>
-              <td>
-                <a href={hotel.hotelVlogVideoLink} target="_blank" rel="noopener noreferrer">Watch Video</a>
-              </td>
-              <td>{hotel.vlogVideoViewCount}</td>
-              <td>{hotel.vlogPostDate}</td>
-                <td>
-                    {!hotel.verified && <button className="approve-button" onClick={() => handleApprove(hotel.hotelId)}>Approve</button>}
-                </td>
-                <td>
-                    {!hotel.verified && <button className="reject-button" onClick={() => handleReject(hotel.hotelId)}>Reject</button>}
-                </td>
+      <div className="table-container">
+        <table className="hotel-table">
+          <thead>
+            <tr>
+              <th>DataEntry Number</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>Rating</th>
+              <th>Phone</th>
+              <th>Map Location</th>
+              <th>Vlog Video</th>
+              <th>View Count</th>
+              <th>Post Date</th>
+              <th>Approve</th>
+              <th>Reject</th>
+              <th>Edit</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {hotels.map((hotel) => (
+              <tr key={hotel.hotelId}>
+                <td>{hotel.userMobileNumber}</td>
+                <td onClick={() => {
+                  if (editingHotelId != hotel.hotelId) {
+                    handleHotelSelect(hotel);
+                  }
+                }}>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelName"
+                      value={editedHotel.hotelName}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.hotelName
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelAddress"
+                      value={editedHotel.hotelAddress}
+                      onChange={handleInputChange}
+                    />
+                  )
+
+ : (
+                    hotel.hotelAddress
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelCity"
+                      value={editedHotel.hotelCity}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.hotelCity
+                  )}
+                </td>
+                <td className="td-rating-Cell">
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="number"
+                      name="hotelRating"
+                      value={editedHotel.hotelRating}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.hotelRating
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelPhone"
+                      value={editedHotel.hotelPhone}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.hotelPhone
+                  )}
+                </td>
+                <td className="mapLink-Cell">
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelMapLocationLink"
+                      value={editedHotel.hotelMapLocationLink}
+                      onChange={handleInputChange}
+                    />
+                  ) : isURL(hotel.hotelMapLocationLink?.trim()) ? (
+                    <a
+                      href={hotel.hotelMapLocationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View on Map
+                    </a>
+                  ) : (
+                    hotel.hotelMapLocationLink
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelVlogVideoLink"
+                      value={editedHotel.hotelVlogVideoLink}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    <a
+                      href={hotel.hotelVlogVideoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Watch Video
+                    </a>
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="number"
+                      name="vlogVideoViewCount"
+                      value={editedHotel.vlogVideoViewCount}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.vlogVideoViewCount
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="date"
+                      name="vlogPostDate"
+                      value={editedHotel.vlogPostDate.substring(0, 10)}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.vlogPostDate
+                  )}
+                </td>
+                <td>
+                  {!hotel.verified && (
+                    <button
+                      className="approve-button"
+                      onClick={() => handleApprove(hotel.hotelId)}
+                    >
+                      Approve
+                    </button>
+                  )}
+                </td>
+                <td>
+                  {!hotel.verified && (
+                    <button
+                      className="reject-button"
+                      onClick={() => handleReject(hotel.hotelId)}
+                    >
+                      Reject
+                    </button>
+                  )}
+                </td>
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <>
+                      <button
+                        className="save-button"
+                        onClick={handleSaveClick}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="cancel-button"
+                        onClick={handleCancelClick}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="edit-button"
+                      onClick={() => handleEditClick(hotel)}
+                    >
+                      Edit
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal for showing hotel details */}
       <HotelDetailsModal
