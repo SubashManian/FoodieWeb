@@ -3,6 +3,7 @@ import './HotelList.css'; // Import the CSS file for styling
 import HotelDetailsModal from './HotelDetailsModal';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
 
 const baseUrl = 'https://food-app-be-sequelize.onrender.com';
 
@@ -19,24 +20,36 @@ const HotelList = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [editingHotelId, setEditingHotelId] = useState(null); // Track which hotel is being edited
   const [editedHotel, setEditedHotel] = useState(null); // Track the edited hotel data
+  const [loadingHotelIds, setLoadingHotelIds] = useState([]);
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
 
   // Fetch hotels data from the API
   const fetchHotels = async () => {
     try {
       setLoading(true); // Start loading
-      const response = await fetch(`${baseUrl}/gethotels`);
+      const url = !showVerifiedOnly ? `${baseUrl}/gethotels` : `${baseUrl}/gethotels/true`
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
       setHotels(data);
       setFilteredHotels(data); // Set filtered hotels initially to all hotels
-      setError(null); // Clear any previous errors
+      setError(null); 
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false); // Stop loading
     }
+  };
+
+  useEffect(() => {
+    fetchHotels();
+  }, [showVerifiedOnly]);
+
+  // Handle checkbox change for filtering
+  const handleCheckboxChange = (e) => {
+    setShowVerifiedOnly(e.target.checked);
   };
 
   // Fetch count data from the API
@@ -58,6 +71,37 @@ const HotelList = () => {
     }
   };
 
+  // Handle approve action
+  const handleApprove = async (hotelId, valid) => {
+    setLoadingHotelIds((prev) => [...prev, hotelId]);
+    try {
+      const response = await fetch(`${baseUrl}/verify`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hotelId: hotelId,
+          verified: true,
+          valid: valid,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to approve the hotel');
+      }
+      console.log(`Hotel with ID ${hotelId} approved.`);
+      alert(`Hotel with ID ${hotelId} approved.`);
+      // Optionally, refetch hotels or update the local state
+      fetchHotels();
+    } catch (error) {
+      console.error(error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setLoadingHotelIds((prev) => prev.filter((id) => id !== hotelId)); // Remove hotel ID from loading list
+    }
+  };
+
   useEffect(() => {
     fetchCount('');
     fetchHotels();
@@ -70,6 +114,7 @@ const HotelList = () => {
 
     if (searchValue.trim() === '') {
       // If search term is cleared, fetch hotels from API
+      setSearchTerm('');
       fetchCount('');
       fetchHotels();
     } else {
@@ -83,10 +128,11 @@ const HotelList = () => {
 
   // Handle date change
   const handleDateChange = (date) => {
-    setSelectedDate(date);
     if (date === null) {
+      setSelectedDate(null);
       fetchHotels();
     } else {
+      setSelectedDate(date);
       // Filter hotels based on the search term and selected date
       filterHotels(searchTerm, date);
     }
@@ -115,18 +161,6 @@ const HotelList = () => {
     
     setSelectedHotel(hotel);
     setShowModal(true);
-  };
-
-  const handleApprove = (hotelId) => {
-    // Approve logic can go here
-    console.log(`Hotel with ID ${hotelId} approved.`);
-    alert(`Hotel with ID ${hotelId} approved.`);
-  };
-
-  const handleReject = (hotelId) => {
-    // Reject logic can go here
-    console.log(`Hotel with ID ${hotelId} rejected.`);
-    alert(`Hotel with ID ${hotelId} rejected.`);
   };
 
   const handleEditClick = (hotel) => {
@@ -163,6 +197,9 @@ const HotelList = () => {
   if (error) {
     return <div className="error-message">Error: {error}</div>;
   }
+
+  // Check if a hotel ID is currently loading
+  const isHotelLoading = (hotelId) => loadingHotelIds.includes(hotelId);
 
   const isURL = (str) => {
     const pattern = new RegExp(
@@ -204,6 +241,16 @@ const HotelList = () => {
           placeholderText="Filter by Date"
           className="date-picker"
         />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={showVerifiedOnly}
+            onChange={handleCheckboxChange}
+          />
+          include Verified
+        </label>
+
         <div className="stats">
           <span>Total Data: {totalData}</span>
           <span className="approved-count">Verified Data: {verifiedData}</span>
@@ -259,8 +306,7 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   )
-
- : (
+                  : (
                     hotel.hotelAddress
                   )}
                 </td>
@@ -359,16 +405,17 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   ) : (
-                    hotel.vlogPostDate
+                    format(new Date(hotel.vlogPostDate), 'MMM do, yyyy')
                   )}
                 </td>
                 <td>
                   {!hotel.verified && (
                     <button
                       className="approve-button"
-                      onClick={() => handleApprove(hotel.hotelId)}
+                      onClick={() => handleApprove(hotel.hotelId, true)}
+                      disabled={isHotelLoading(hotel.hotelId)}
                     >
-                      Approve
+                      {isHotelLoading(hotel.hotelId) ? 'Approving...' : 'Approve'}
                     </button>
                   )}
                 </td>
@@ -376,9 +423,10 @@ const HotelList = () => {
                   {!hotel.verified && (
                     <button
                       className="reject-button"
-                      onClick={() => handleReject(hotel.hotelId)}
+                      onClick={() => handleApprove(hotel.hotelId, false)}
+                      disabled={isHotelLoading(hotel.hotelId)}
                     >
-                      Reject
+                      {isHotelLoading(hotel.hotelId) ? 'Rejecting...' : 'Reject'}
                     </button>
                   )}
                 </td>
