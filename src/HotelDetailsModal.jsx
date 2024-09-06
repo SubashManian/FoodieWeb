@@ -35,25 +35,30 @@ const HotelDetailsModal = ({ show, onClose, hotelDetails }) => {
         </table>
 
         {/* Display Timings */}
-        <h3>Operating Timings</h3>
-        <table className="details-table">
-          <thead>
-            <tr>
-              <th>Morning</th>
-              <th>Noon</th>
-              <th>Evening</th>
-              <th>Late Night</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{hotelDetails.hotelTimings[0].morning}</td>
-              <td>{hotelDetails.hotelTimings[0].noon}</td>
-              <td>{hotelDetails.hotelTimings[0].evening}</td>
-              <td>{hotelDetails.hotelTimings[0].lateNight ? 'Yes' : 'No'}</td>
-            </tr>
-          </tbody>
-        </table>
+        {
+          hotelDetails?.hotelTimings.length > 0 && 
+          <>
+            <h3>Operating Timings</h3>
+            <table className="details-table">
+              <thead>
+                <tr>
+                  <th>Morning</th>
+                  <th>Noon</th>
+                  <th>Evening</th>
+                  <th>Late Night</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{hotelDetails.hotelTimings[0].morning}</td>
+                  <td>{hotelDetails.hotelTimings[0].noon}</td>
+                  <td>{hotelDetails.hotelTimings[0].evening}</td>
+                  <td>{hotelDetails.hotelTimings[0].lateNight ? 'Yes' : 'No'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </>
+        }
       </div>
     </div>
   );
