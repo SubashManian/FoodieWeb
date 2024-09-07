@@ -168,14 +168,42 @@ const HotelList = () => {
     setEditedHotel({ ...hotel }); // Copy the hotel data to be edited
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     // Update the hotel with editedHotel data
     const updatedHotels = hotels.map((hotel) =>
       hotel.hotelId === editingHotelId ? editedHotel : hotel
     );
-    setHotels(updatedHotels);
-    setEditingHotelId(null);
-    setEditedHotel(null);
+    setLoadingHotelIds((prev) => [...prev, editingHotelId]);
+    try {
+      const response = await fetch(`${baseUrl}/updateHotel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...editedHotel
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update the hotel details');
+      }
+      console.log(`Hotel with ID ${editingHotelId} updated.`);
+      // alert(`Hotel with ID ${editingHotelId} updated.`);
+      setHotels(updatedHotels);
+      setEditingHotelId(null);
+      setEditedHotel(null);
+      // Optionally, refetch hotels or update the local state
+      fetchHotels();
+    } catch (error) {
+      console.error(error);
+      alert(`Error: ${error.message}`);
+      setHotels(hotels);
+      setEditingHotelId(null);
+      setEditedHotel(null);
+    } finally {
+      setLoadingHotelIds((prev) => prev.filter((id) => id !== editingHotelId)); // Remove hotel ID from loading list
+    }
   };
 
   const handleCancelClick = () => {
