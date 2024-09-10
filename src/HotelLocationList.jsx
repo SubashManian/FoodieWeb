@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 
 const baseUrl = 'https://food-app-be-sequelize.onrender.com';
 
-const HotelList = () => {
+const HotelLocationList = () => {
   const [hotels, setHotels] = useState([]);
   const [countsDetails, setCountDetails] = useState({});
   const [selectedHotel, setSelectedHotel] = useState(null);
@@ -21,14 +21,14 @@ const HotelList = () => {
   const [editingHotelId, setEditingHotelId] = useState(null); // Track which hotel is being edited
   const [editedHotel, setEditedHotel] = useState(null); // Track the edited hotel data
   const [loadingHotelIds, setLoadingHotelIds] = useState([]);
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(true);
 
   // Fetch hotels data from the API
   const fetchHotels = async () => {
     try {
       setLoading(true); // Start loading
-      const url = !showVerifiedOnly ? `${baseUrl}/gethotels` : `${baseUrl}/gethotels/true`
-      const response = await fetch(url);
+    //   const url = !showVerifiedOnly ? `${baseUrl}/getVerifiedHotels` : `${baseUrl}/gethotels/true`
+      const response = await fetch(`${baseUrl}/getVerifiedHotels`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -256,7 +256,7 @@ const HotelList = () => {
 
       {/* Search and Date Filter */}
       <div className="filter-container">
-        <input
+        {/* <input
           type="text"
           placeholder="Search by Mobile Number"
           value={searchTerm}
@@ -270,21 +270,21 @@ const HotelList = () => {
           isClearable
           placeholderText="Filter by Date"
           className="date-picker"
-        />
+        /> */}
 
-        <label>
+        {/* <label>
           <input
             type="checkbox"
             checked={showVerifiedOnly}
             onChange={handleCheckboxChange}
           />
           include Verified
-        </label>
+        </label> */}
 
         <div className="stats">
           <span>Total Data: {totalData}</span>
           <span className="approved-count">Verified Data: {verifiedData}</span>
-          <span className="approved-count">Valid Data: {validData}</span>
+          {/* <span className="approved-count">Valid Data: {validData}</span> */}
         </div>
       </div>
 
@@ -292,7 +292,7 @@ const HotelList = () => {
         <table className="hotel-table">
           <thead>
             <tr>
-              <th>DataEntry Number</th>
+              {/* <th>DataEntry Number</th> */}
               <th>Name</th>
               <th>Address</th>
               <th>City</th>
@@ -300,17 +300,17 @@ const HotelList = () => {
               <th>Phone</th>
               <th>Map Location</th>
               <th>Vlog Video</th>
-              <th>View Count</th>
-              <th>Post Date</th>
-              <th>Approve</th>
-              <th>Reject</th>
+              {/* <th>View Count</th> */}
+              {/* <th>Post Date</th> */}
+              <th>Latitude</th>
+              <th>Longitude</th>
               <th>Edit</th>
             </tr>
           </thead>
           <tbody>
             {hotels.map((hotel) => (
               <tr key={hotel.hotelId}>
-                <td>{hotel.userMobileNumber}</td>
+                {/* <td>{hotel.userMobileNumber}</td> */}
                 <td onClick={() => {
                   if (editingHotelId != hotel.hotelId) {
                     handleHotelSelect(hotel);
@@ -414,7 +414,7 @@ const HotelList = () => {
                     </a>
                   )}
                 </td>
-                <td>
+                {/* <td>
                   {editingHotelId === hotel.hotelId ? (
                     <input
                       type="number"
@@ -437,8 +437,32 @@ const HotelList = () => {
                   ) : (
                     format(new Date(hotel.vlogPostDate), 'MMM do, yyyy')
                   )}
+                </td> */}
+                <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="number"
+                      name="latitude"
+                      value={editedHotel.latitude}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.latitude
+                  )}
                 </td>
                 <td>
+                  {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="number"
+                      name="longitude"
+                      value={editedHotel.longitude}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.longitude
+                  )}
+                </td>
+                {/* <td>
                   {!hotel.verified && (
                     <button
                       className="approve-button"
@@ -459,7 +483,7 @@ const HotelList = () => {
                       {isHotelLoading(hotel.hotelId) ? 'Rejecting...' : 'Reject'}
                     </button>
                   )}
-                </td>
+                </td> */}
                 <td>
                   {editingHotelId === hotel.hotelId ? (
                     <>
@@ -501,4 +525,4 @@ const HotelList = () => {
   );
 };
 
-export default HotelList;
+export default HotelLocationList;
