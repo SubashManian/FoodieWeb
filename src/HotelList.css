@@ -171,4 +171,9 @@
   background-color: #f44336;
   color: white;
 }
+.thumbnail {
+  width: 100px;
+  height: 56px;
+  object-fit: cover;
+}
 

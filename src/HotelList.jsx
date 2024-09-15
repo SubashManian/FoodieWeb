@@ -300,6 +300,7 @@ const HotelList = () => {
               <th>Phone</th>
               <th>Map Location</th>
               <th>Vlog Video</th>
+              <th>Thumbnail</th>
               <th>View Count</th>
               <th>Post Date</th>
               <th>Approve</th>
@@ -412,6 +413,26 @@ const HotelList = () => {
                     >
                       Watch Video
                     </a>
+                  )}
+                </td>
+                <td>
+                  {hotel.videoId ? (
+                    hotel.videoType.includes('Youtube') ? (
+                      <img
+                        src={`https://img.youtube.com/vi/${hotel.videoId}/maxresdefault.jpg`}
+                        alt="YouTube Thumbnail"
+                        className="thumbnail"
+                        onError={(e) => {
+                          // Fallback to a lower resolution if maxresdefault.jpg is not available
+                          e.target.onerror = null; 
+                          e.target.src = `https://img.youtube.com/vi/${hotel.videoId}/hqdefault.jpg`;
+                        }}
+                      />
+                    ) : (
+                      "Instagram Video"
+                    )
+                  ) : (
+                    "No Video"
                   )}
                 </td>
                 <td>
