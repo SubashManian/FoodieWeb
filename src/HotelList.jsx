@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
-const baseUrl = 'https://food-app-be-sequelize.onrender.com';
+const baseUrl = 'https://food-app-be-sequelize-6i8s.onrender.com';
 
 const HotelList = () => {
   const [hotels, setHotels] = useState([]);
@@ -26,9 +26,31 @@ const HotelList = () => {
   // Fetch hotels data from the API
   const fetchHotels = async () => {
     try {
-      setLoading(true); // Start loading
-      const url = !showVerifiedOnly ? `${baseUrl}/gethotels` : `${baseUrl}/gethotels/true`
-      const response = await fetch(url);
+      setLoading(true);
+
+      const url = `${baseUrl}/gethotels`;
+
+      const queryParams = new URLSearchParams();
+        
+      if (showVerifiedOnly) {
+          queryParams.append('verified', showVerifiedOnly);
+      }
+
+      if (searchTerm) {
+        queryParams.append('userMobileNumber', searchTerm);
+      }
+
+      if (selectedDate) {
+        queryParams.append('createdDate', selectedDate);
+      }
+
+      const finalUrl = queryParams.toString() ? `${url}?${queryParams}` : url;
+
+      console.log(finalUrl);
+      
+
+      const response = await fetch(finalUrl);
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -45,30 +67,11 @@ const HotelList = () => {
 
   useEffect(() => {
     fetchHotels();
-  }, [showVerifiedOnly]);
+  }, [showVerifiedOnly, selectedDate, searchTerm]);
 
   // Handle checkbox change for filtering
   const handleCheckboxChange = (e) => {
     setShowVerifiedOnly(e.target.checked);
-  };
-
-  // Fetch count data from the API
-  const fetchCount = async (userMobileNumber) => {
-    try {
-      setLoading(true); // Start loading
-      let url = userMobileNumber === '' ? `${baseUrl}/count` : `${baseUrl}/count/${userMobileNumber}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setCountDetails(data);
-      setError(null); // Clear any previous errors
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false); // Stop loading
-    }
   };
 
   // Handle approve action
@@ -103,54 +106,31 @@ const HotelList = () => {
   };
 
   useEffect(() => {
-    fetchCount('');
     fetchHotels();
   }, []);
 
   // Handle search input change
   const handleSearchChange = (event) => {
     const searchValue = event.target.value;
-    setSearchTerm(searchValue);
-
-    if (searchValue.trim() === '') {
-      // If search term is cleared, fetch hotels from API
-      setSearchTerm('');
-      fetchCount('');
-      fetchHotels();
-    } else {
-      if (searchValue?.trim()?.length === 10) {
-        fetchCount(searchValue?.trim());
-      }
-      // Filter hotels based on the search term and selected date
-      filterHotels(searchValue, selectedDate);
-    }
+    setSearchTerm(searchValue?.trim());
   };
 
   // Handle date change
   const handleDateChange = (date) => {
-    console.log(date);
-    
-    if (date === null) {
-      setSelectedDate(null);
-      fetchHotels();
-    } else {
-      setSelectedDate(date);
-      // Filter hotels based on the search term and selected date
-      filterHotels(searchTerm, date);
-    }
+    setSelectedDate(date);
   };
 
-  // Function to filter hotels by userMobileNumber and vlogPostDate
-  const filterHotels = (searchValue, date) => {  
-    const filtered = hotels.filter((hotel) => {
-      const matchesSearch = hotel.userMobileNumber.includes(searchValue);
-      const matchesDate = date ? new Date(hotel.createdDate).toDateString() === date.toDateString() : true;
+  // // Function to filter hotels by userMobileNumber and vlogPostDate
+  // const filterHotels = (searchValue, date) => {  
+  //   const filtered = hotels.filter((hotel) => {
+  //     const matchesSearch = hotel.userMobileNumber.includes(searchValue);
+  //     const matchesDate = date ? new Date(hotel.createdDate).toDateString() === date.toDateString() : true;
 
-      return matchesSearch && matchesDate;
-    });
+  //     return matchesSearch && matchesDate;
+  //   });
 
-    setHotels(filtered);
-  };
+  //   setHotels(filtered);
+  // };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -158,16 +138,13 @@ const HotelList = () => {
   };
 
   const handleHotelSelect = (hotel) => {
-    // Mock fetching details for selected hotel
-    console.log("Entered Modal");
-    
     setSelectedHotel(hotel);
     setShowModal(true);
   };
 
   const handleEditClick = (hotel) => {
     setEditingHotelId(hotel.hotelId);
-    setEditedHotel({ ...hotel }); // Copy the hotel data to be edited
+    setEditedHotel({ ...hotel });
   };
 
   const handleSaveClick = async () => {
@@ -303,6 +280,7 @@ const HotelList = () => {
               <th>Thumbnail</th>
               <th>View Count</th>
               <th>Post Date</th>
+              <th>Category</th>
               <th>Approve</th>
               <th>Reject</th>
               <th>Edit</th>
@@ -457,6 +435,18 @@ const HotelList = () => {
                     />
                   ) : (
                     format(new Date(hotel.vlogPostDate), 'MMM do, yyyy')
+                  )}
+                </td>
+                <td>
+                {editingHotelId === hotel.hotelId ? (
+                    <input
+                      type="text"
+                      name="hotelCategory"
+                      value={editedHotel.hotelCategory}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    hotel.hotelCategory
                   )}
                 </td>
                 <td>
