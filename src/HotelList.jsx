@@ -15,6 +15,17 @@ const HotelList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const category = [
+    { 'Name': 'NonVeg', 'ID': 'NonVeg' },
+    { 'Name': 'Veg', 'ID': 'Veg' },
+    { 'Name': 'Beverage', 'ID': 'Beverage' },
+    { 'Name': 'Cafe', 'ID': 'Cafe' },
+    { 'Name': 'Snacks', 'ID': 'Snacks' },
+    { 'Name': 'Fast Food', 'ID': 'Fast Food' },
+    { 'Name': 'Deserts', 'ID': 'Deserts' },
+    { 'Name': 'RestoBar', 'ID': 'RestoBar' }
+  ];
+
   const [filteredHotels, setFilteredHotels] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
@@ -439,12 +450,17 @@ const HotelList = () => {
                 </td>
                 <td>
                 {editingHotelId === hotel.hotelId ? (
-                    <input
-                      type="text"
+                    <select
                       name="hotelCategory"
                       value={editedHotel.hotelCategory}
                       onChange={handleInputChange}
-                    />
+                    >
+                      {category.map((cat) => (
+                        <option key={cat.ID} value={cat.ID}>
+                          {cat.Name}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
                     hotel.hotelCategory
                   )}
