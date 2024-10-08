@@ -5,8 +5,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
-// const baseUrl = 'https://food-app-be-sequelize-6i8s.onrender.com';
-const baseUrl = 'http://localhost:3001';
+const baseUrl = 'https://food-app-be-sequelize-6i8s.onrender.com';
+// const baseUrl = 'http://localhost:3001';
 
 const HotelList = () => {
   const [hotels, setHotels] = useState([]);
