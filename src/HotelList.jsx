@@ -5,7 +5,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
-const baseUrl = 'https://food-app-be-sequelize-6i8s.onrender.com';
+// const baseUrl = 'https://food-app-be-sequelize-6i8s.onrender.com';
+const baseUrl = 'http://localhost:3001';
 
 const HotelList = () => {
   const [hotels, setHotels] = useState([]);
@@ -86,7 +87,7 @@ const HotelList = () => {
   };
 
   // Handle approve action
-  const handleApprove = async (hotelId, valid) => {
+  const handleApprove = async (hotelId, valid, duplicateVideoData = false) => {
     setLoadingHotelIds((prev) => [...prev, hotelId]);
     try {
       const response = await fetch(`${baseUrl}/verify`, {
@@ -98,6 +99,7 @@ const HotelList = () => {
           hotelId: hotelId,
           verified: true,
           valid: valid,
+          hotelVideoData: duplicateVideoData
         }),
       });
 
@@ -281,6 +283,7 @@ const HotelList = () => {
           <thead>
             <tr>
               <th>DataEntry Number</th>
+              <th>Video Entry</th>
               <th>Name</th>
               <th>Address</th>
               <th>City</th>
@@ -301,8 +304,9 @@ const HotelList = () => {
             {hotels.map((hotel) => (
               <tr key={hotel.hotelId}>
                 <td>{hotel.userMobileNumber}</td>
+                <td>{hotel?.duplicateVideoData ? hotel?.duplicateVideoData.toString(): 'false'}</td>
                 <td onClick={() => {
-                  if (editingHotelId != hotel.hotelId) {
+                  if (editingHotelId != hotel.hotelId && !hotel?.duplicateVideoData) {
                     handleHotelSelect(hotel);
                   }
                 }}>
@@ -314,7 +318,7 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   ) : (
-                    hotel.hotelName
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelName : hotel.hotelName
                   )}
                 </td>
                 <td>
@@ -327,7 +331,7 @@ const HotelList = () => {
                     />
                   )
                   : (
-                    hotel.hotelAddress
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelAddress : hotel.hotelAddress
                   )}
                 </td>
                 <td>
@@ -339,7 +343,7 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   ) : (
-                    hotel.hotelCity
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelCity : hotel.hotelCity
                   )}
                 </td>
                 <td className="td-rating-Cell">
@@ -351,7 +355,7 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   ) : (
-                    hotel.hotelRating
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelRating : hotel.hotelRating
                   )}
                 </td>
                 <td>
@@ -363,7 +367,7 @@ const HotelList = () => {
                       onChange={handleInputChange}
                     />
                   ) : (
-                    hotel.hotelPhone
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelPhone : hotel.hotelPhone
                   )}
                 </td>
                 <td className="mapLink-Cell">
@@ -374,9 +378,9 @@ const HotelList = () => {
                       value={editedHotel.hotelMapLocationLink}
                       onChange={handleInputChange}
                     />
-                  ) : isURL(hotel.hotelMapLocationLink?.trim()) ? (
+                  ) : isURL(hotel?.duplicateVideoData ? hotel?.hotel?.hotelMapLocationLink : hotel.hotelMapLocationLink?.trim()) ? (
                     <a
-                      href={hotel.hotelMapLocationLink}
+                      href={hotel?.duplicateVideoData ? hotel?.hotel?.hotelMapLocationLink : hotel.hotelMapLocationLink}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -405,16 +409,16 @@ const HotelList = () => {
                   )}
                 </td>
                 <td>
-                  {hotel.videoId ? (
-                    hotel.videoType.includes('Youtube') ? (
+                  {hotel.videoId || hotel.videoid ? (
+                    hotel?.videoType?.includes('Youtube') || hotel?.videotype?.includes('Youtube') ? (
                       <img
-                        src={`https://img.youtube.com/vi/${hotel.videoId}/maxresdefault.jpg`}
+                        src={`https://img.youtube.com/vi/${hotel.videoId ? hotel.videoId : hotel?.videoid}/maxresdefault.jpg`}
                         alt="YouTube Thumbnail"
                         className="thumbnail"
                         onError={(e) => {
                           // Fallback to a lower resolution if maxresdefault.jpg is not available
                           e.target.onerror = null; 
-                          e.target.src = `https://img.youtube.com/vi/${hotel.videoId}/hqdefault.jpg`;
+                          e.target.src = `https://img.youtube.com/vi/${hotel.videoId ? hotel.videoId : hotel?.videoid}/hqdefault.jpg`;
                         }}
                       />
                     ) : (
@@ -462,14 +466,14 @@ const HotelList = () => {
                       ))}
                     </select>
                   ) : (
-                    hotel.hotelCategory
+                    hotel?.duplicateVideoData ? hotel?.hotel?.hotelCategory : hotel.hotelCategory
                   )}
                 </td>
                 <td>
                   {!hotel.verified && (
                     <button
                       className="approve-button"
-                      onClick={() => handleApprove(hotel.hotelId, true)}
+                      onClick={() => handleApprove(hotel.hotelId, true, hotel?.duplicateVideoData)}
                       disabled={isHotelLoading(hotel.hotelId)}
                     >
                       {isHotelLoading(hotel.hotelId) ? 'Approving...' : 'Approve'}
@@ -480,14 +484,14 @@ const HotelList = () => {
                   {!hotel.verified && (
                     <button
                       className="reject-button"
-                      onClick={() => handleApprove(hotel.hotelId, false)}
+                      onClick={() => handleApprove(hotel.hotelId, false, hotel?.duplicateVideoData)}
                       disabled={isHotelLoading(hotel.hotelId)}
                     >
                       {isHotelLoading(hotel.hotelId) ? 'Rejecting...' : 'Reject'}
                     </button>
                   )}
                 </td>
-                <td>
+                {!hotel?.duplicateVideoData && <td>
                   {editingHotelId === hotel.hotelId ? (
                     <>
                       <button
@@ -511,7 +515,7 @@ const HotelList = () => {
                       Edit
                     </button>
                   )}
-                </td>
+                </td>}
               </tr>
             ))}
           </tbody>
